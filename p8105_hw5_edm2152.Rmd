@@ -46,6 +46,7 @@ one_df_tidy = # Creating a new data frame for the tidy version of this dataset a
 one_df_tidy %>% 
   group_by(arm, id) %>% 
   ggplot(aes(x = week, y = observation, color = arm, type = id)) + 
+  geom_point() +
   geom_line() + 
   theme_bw() 
 
@@ -56,5 +57,25 @@ one_df_tidy %>%
 From our line plot, we can see that there appears to be a clear difference between the control and experimental arms. The experimental group appears to increase over time in observation value and the control group appears to hover around the same value or slightly decrease over time. 
 
 ## Problem 2 
+
+```{r, Importing Homicide Data}
+
+# I imported the raw file straight from GitHub, just in case the data is updated in the future then those updates will be incoporated in my code
+
+wp_homicide_data_raw = 
+  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
+  janitor::clean_names()
+
+```
+
+Describing the Raw Data: 
+
+```{r, Manipulating the Data}
+
+wp_homicide_data = 
+  wp_homicide_data_raw %>% 
+  mutate(city_state = str_c(city, state, sep = ", "))
+
+```
 
 
