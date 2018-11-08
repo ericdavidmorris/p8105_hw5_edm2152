@@ -16,27 +16,35 @@ library(purrr)
 
 ## Problem 1 
 
-Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
-
-Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
-Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
-
-```{r, Importing Data}
+```{r, Importing and Tidying Data}
 
 one_df = 
-  tibble(participant = str_c(list.files("./data", full.names = TRUE))) %>% # Getting all file names using list.files
+  tibble(participant = list.files("./data", full.names = TRUE)) %>% # Getting all file names using list.files
   mutate(long_data = map(participant, read_csv)) %>% # Using map, similar to Napoleon Dynamite Example to read in the data for each subject
   unnest()
 
-one_df_tidy =
+one_df_tidy = # Creating a new data frame for the tidy version of this dataset and tidying 
   one_df %>% 
   separate(participant, into = c("arm", "id"), sep = "_") %>% 
   separate(arm, into = c("filler1", "arm"), sep = "a/") %>% 
   separate(id, into = c("id", "filler2"), sep = ".c") %>% 
   select(-starts_with("fill")) %>% 
   mutate(arm = str_replace(arm, "con", "control"),
-         arm = str_replace(arm, "exp", "experimental"),
-         id = as.numeric(id))
+         arm = str_replace(arm, "exp", "experimental")) %>%
+  gather(key = week, value = observation, week_1:week_8) %>% 
+  separate(week, into = c("filler", "week"), sep = "_") %>% 
+  select(-filler) %>% 
+  mutate(week = as.numeric(week))
+```
+
+Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
+
+```{r, Spaghetti Plot}
+
+one_df_tidy %>% 
+  group_by(arm, id) %>% 
+  ggplot(aes(x = week, y = observation, color = arm, type = id)) + 
+  geom_line()
 
 ```
 
