@@ -41,6 +41,9 @@ Make a spaghetti plot showing observations on each subject over time, and commen
 
 ```{r, Spaghetti Plot}
 
+# I initially converted the id variable to a numeric variable in my tidying above. However, that wasn't working in my plot, so needed to remove that 
+# and leave id as a character so I could specificy type in my ggplot to get a line for each participant 
+
 one_df_tidy %>% 
   group_by(arm, id) %>% 
   ggplot(aes(x = week, y = observation, color = arm, type = id)) + 
