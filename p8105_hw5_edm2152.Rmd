@@ -30,7 +30,12 @@ one_df =
 
 one_df_tidy =
   one_df %>% 
-  separate(participant, into = c("arm", "file"), separate = ".c")
+  separate(participant, into = c("arm", "id"), sep = "_") %>% 
+  separate(arm, into = c("filler", "arm"), sep = "a/") %>% 
+  select(-filler) %>% 
+  separate(id, into = c("id", "filler"), sep = ".c") %>% 
+  select(-filler)
+  
 
 
 ```
