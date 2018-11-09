@@ -119,5 +119,19 @@ all_unsolved =
   all_cities_nest %>% 
   mutate(all_prop_unsolved = map(data, est_prop_unsolved)) %>% 
   unnest()
+
 ```
+
+```{r, plotting estimates}
+
+all_unsolved %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
+  coord_flip()
+
+```
+Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+
 
