@@ -97,7 +97,27 @@ For the city of Baltimore, MD, use the prop.test function to estimate the propor
 
 ```{r, Baltimore}
 
+est_prop_unsolved = function(df) {
+  
+  unsolved_data = prop.test(df$unsolved, df$total)
+  
+  broom::tidy(unsolved_data) %>% 
+    select(estimate, conf.low, conf.high)
+}
 
+baltimore_est_prop = 
+  homicide_vals %>% 
+  filter(city_state == "Baltimore, MD") %>% 
+  est_prop_unsolved
 
+```
+
+```{r}
+all_cities_nest = nest(homicide_vals, unsolved, total)
+
+all_unsolved = 
+  all_cities_nest %>% 
+  mutate(all_prop_unsolved = map(data, est_prop_unsolved)) %>% 
+  unnest()
 ```
 
