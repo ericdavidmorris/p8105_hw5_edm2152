@@ -145,10 +145,17 @@ all_unsolved =
 all_unsolved %>% 
   mutate(city_state = fct_reorder(city_state, estimate)) %>% 
   ggplot(aes(x = city_state, y = estimate)) + 
-  geom_point() + 
+  geom_point(color = "firebrick") + 
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
-  coord_flip()
+  coord_flip() +
+  labs(title = "Proportion of Unsolved Homicides in 50 Major US Cities", 
+       y = "Proportion of Unsolved Homicide Cases", 
+       x = "City, State", 
+       caption = "Error Bars represent 95% Confidence Interval of Estimated Proportion") + 
+  theme_bw()
 
+
+## fix the text size for axis 
 ```
 
 
