@@ -16,7 +16,7 @@ library(purrr)
 
 ## Problem 1 
 
-```{r, Importing and Tidying Data}
+```{r, Importing and Tidying Data, message = FALSE}
 
 one_df = 
   tibble(participant = list.files("./data", full.names = TRUE)) %>% # Getting all file names using list.files
@@ -48,9 +48,14 @@ one_df_tidy %>%
   ggplot(aes(x = week, y = observation, color = arm, type = id)) + 
   geom_point() +
   geom_line() + 
-  theme_bw() 
-
-# Make this look pretty and make comment below better 
+  theme_bw() +
+  scale_x_continuous(breaks = seq(1, 8, 1)) + 
+  scale_y_continuous(breaks = seq(-2.5, 8, 0.5)) + 
+  labs(title = "Subject Observations Over Time by Treatment Arm", 
+       x = "Week Number",
+       y = "Observation Value") 
+ 
+# + facet_grid(~arm) decided not to include this and overlay the two arms in one plot 
 
 ```
 
@@ -58,7 +63,7 @@ From our line plot, we can see that there appears to be a clear difference betwe
 
 ## Problem 2 
 
-```{r, Importing Homicide Data}
+```{r, Importing Homicide Data, message = FALSE}
 
 # I imported the raw file straight from GitHub, just in case the data is updated in the future then those updates will be incoporated in my code
 
@@ -72,9 +77,13 @@ Describing the Raw Data:
 
 ```{r, Manipulating the Data}
 
+# Adding the city state variable by concatenating the two existing location variables 
+
 wp_homicide_data = 
   wp_homicide_data_raw %>% 
   mutate(city_state = str_c(city, state, sep = ", ")) 
+
+# Filtering out unsolved homicides 
 
 unsolved_homicides = 
   wp_homicide_data %>% 
@@ -82,10 +91,14 @@ unsolved_homicides =
   filter(disposition %in% c("Closed without arrest", "Open/No arrest")) %>%
   summarize(unsolved = n())
 
+# Total homicides in the data set
+
 total_homicides = 
   wp_homicide_data %>% 
   group_by(city_state) %>% 
   summarize(total = n())
+
+# Joining the two, creating a data set with city_state variable, unsolved homicides and total homicides 
 
 homicide_vals = 
   left_join(unsolved_homicides, total_homicides, by = "city_state") %>% 
@@ -93,9 +106,12 @@ homicide_vals =
 
 ```
 
-For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+
+
 
 ```{r, Baltimore}
+
+# Creating a function for prop.test for repeated use,  also adding in the eventual broom::tidy 
 
 est_prop_unsolved = function(df) {
   
@@ -108,18 +124,20 @@ est_prop_unsolved = function(df) {
 baltimore_est_prop = 
   homicide_vals %>% 
   filter(city_state == "Baltimore, MD") %>% 
-  est_prop_unsolved
+  est_prop_unsolved()
+
+baltimore_est_prop %>% 
+  knitr::kable()
 
 ```
 
-```{r}
+```{r, all cities data for plot}
 all_cities_nest = nest(homicide_vals, unsolved, total)
 
 all_unsolved = 
   all_cities_nest %>% 
   mutate(all_prop_unsolved = map(data, est_prop_unsolved)) %>% 
   unnest()
-
 ```
 
 ```{r, plotting estimates}
@@ -132,6 +150,5 @@ all_unsolved %>%
   coord_flip()
 
 ```
-Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
 
 
