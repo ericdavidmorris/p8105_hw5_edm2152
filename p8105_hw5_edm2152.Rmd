@@ -76,9 +76,15 @@ wp_homicide_data_raw =
   read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
   janitor::clean_names()
 
+num_cities = 
+  wp_homicide_data_raw %>% 
+  group_by(city) %>% 
+  distinct(city) %>% 
+  nrow()
+
 ```
 
-Describing the Raw Data: 
+The Washington Post homicide dataset contains data on `r nrow(wp_homicide_data_raw )` homicides across `r num_cities` major U.S. cities ranging from 2007 to 2015. There are `r ncol(wp_homicide_data_raw )` total variables which include the victim's full name, race, age, and whether or not the homicide case was solved (termed "disposition"). Additionally the dataset provides an ID number, report date, and specific location of the homicide via latitude and longitude coordinates. 
 
 ```{r, Manipulating the Data}
 
@@ -112,11 +118,9 @@ homicide_vals =
 ```
 
 
-
-
 ```{r, Baltimore}
 
-# Creating a function for prop.test for repeated use,  also adding in the eventual broom::tidy 
+# Creating a function for prop.test for repeated use, also adding in the eventual broom::tidy in the function
 
 est_prop_unsolved = function(df) {
   
@@ -136,7 +140,11 @@ baltimore_est_prop %>%
 
 ```
 
+Here we see an estimated proportion of 0.6456, with a lower bound of 0.6276 and an upper bound of 0.6632 in a 95% CI. 
+
 ```{r, all cities data for plot}
+# this is similar to the map from #1, I nested all the cities and ran a map for my est function from above for all the cities
+
 all_cities_nest = nest(homicide_vals, unsolved, total)
 
 all_unsolved = 
@@ -146,6 +154,8 @@ all_unsolved =
 ```
 
 ```{r, plotting estimates}
+# Using factor reorder to list cities in descending order of their estimate and using geom_errorbar
+
 
 all_unsolved %>% 
   mutate(city_state = fct_reorder(city_state, estimate)) %>% 
@@ -157,8 +167,8 @@ all_unsolved %>%
        y = "Proportion of Unsolved Homicide Cases", 
        x = "City, State", 
        caption = "Error Bars represent 95% Confidence Interval of Estimated Proportion") + 
-  theme(axis.text.x = element_text(size = 5)) + 
+  theme(axis.text.x = element_text(size = 3)) + 
   theme_bw()
 ```
 
-
+In the above plot, we see that among the 50 major cities for which we have data, Chicago has the highest proportion of unsolved homicide cases in this dataset and Richmond, VA has the lowest estimate. In the future, I think this data would be more interesting had it been weighted or incorporated a per capita measure. 
